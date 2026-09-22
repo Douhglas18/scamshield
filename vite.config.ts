@@ -14,7 +14,7 @@ export default defineConfig(() => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
-          name: 'ScamShield - Offer & Phishing Inspector',
+          name: 'ScamShield - Offer Letter & Phishing Inspector',
           short_name: 'ScamShield',
           description:
             'Fake Offer Letter & Phishing Inspector powered by Gemini AI with real-time scam threat scoring, red flag analysis, and local link protection.',
@@ -80,8 +80,7 @@ export default defineConfig(() => {
           ],
         },
         devOptions: {
-          enabled: true,
-          type: 'module',
+          enabled: false,
         },
       }),
     ],

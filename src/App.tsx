@@ -180,7 +180,7 @@ export default function App() {
               <span className={displaySettings.highContrastMode ? 'text-white underline' : 'text-cyan-400'}>
                 Shield
               </span>{' '}
-              Offer & Phishing Inspector
+              Offer Letter & Phishing Inspector
             </h1>
 
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
