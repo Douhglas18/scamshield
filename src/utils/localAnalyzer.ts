@@ -31,8 +31,60 @@ export function analyzeOfferLocally(
   const senderMatch = text.match(/(?:sincerely|regards|from|recruiter|pastor|dr\.|mr\.|ms\.)\s*:?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
   if (senderMatch) claimedSender = senderMatch[1].trim();
 
-  // 1. Advance-Fee Check / Equipment Scam heuristics
+  // 1. Advance-Fee Fraud Patterns in Common Employment Documents (Training, Equipment, Soft Credit Checks, Cashier Checks)
   let paymentScore = 0;
+
+  // Sanitize disclaimers so authentic statements like "At no point will you ever be asked to purchase equipment or wire funds" are not flagged
+  const textWithoutAdvanceFeeDisclaimers = normalized
+    .replace(/(?:never|at\s*no\s*point\s*(?:will\s*you\s*(?:ever)?\s*be\s*asked\s*to)?)\s*(?:ask|require|charge|pay|wire|deposit|purchase|buy).*?(?:funds|money|equipment|hardware|training|fees?)[^.\n]*\.?/gi, '')
+    .replace(/no\s*(?:fees?|payments?)\s*(?:are\s*)?required\s*(?:from|by)\s*(?:candidates?|applicants?)[^.\n]*\.?/gi, '');
+
+  // 1a. Advance-Fee Fraud: Mandatory Candidate-Paid Training / Certification / Onboarding Modules
+  const trainingFeeRegex = /(?:pay(?:ment)?|deposit|fee|cost|\$\d+).*?(?:training|certification|onboarding\s*course|learning\s*module|orientation\s*kit|software\s*training)|(?:training|certification|orientation|onboarding)\s*(?:fee|deposit|cost|charge|\$\d+)|(?:reimburs\w+\s*(?:in|on|with)\s*(?:your\s*)?(?:first\s*)?(?:paycheck|pay\s*check|salary))/i;
+  if (trainingFeeRegex.test(textWithoutAdvanceFeeDisclaimers) && /(?:training|certification|course|onboarding|orientation|modules?)/i.test(textWithoutAdvanceFeeDisclaimers)) {
+    paymentScore += 70;
+    redFlags.push({
+      id: 'rf-advance-fee-training',
+      category: 'payment_demand',
+      title: 'Advance-Fee Fraud: Mandatory Candidate-Paid Training or Certification',
+      severity: 'CRITICAL',
+      quote: text.match(/(?:(?:pay(?:ment)?|deposit|fee|cost|\$\d+).*?(?:training|certification|onboarding|orientation)|(?:training|certification|course).*?(?:fee|cost|deposit|\$\d+)|reimburs\w+.*?(?:paycheck|salary))/i)?.[0] || 'Upfront fee demanded for job training',
+      explanation: 'Demanding that a candidate pay upfront for training modules, onboarding materials, or certifications—even with promises of later reimbursement in their first paycheck—is a classic employment advance-fee fraud scheme. Legitimate employers absorb all training expenses and pay employees for their training hours.',
+      verificationAdvice: 'Never pay fees for job training, certifications, or onboarding kits. Authentic employers provide all required training and learning materials free of charge.'
+    });
+  }
+
+  // 1b. Advance-Fee Fraud: Candidate-Paid Equipment, Laptop, or Hardware Vendor Deposit
+  const equipmentFeeRegex = /(?:purchase|buy|order|pay\s*for|deposit\s*for|wire\s*for|transfer\s*for).*?(?:laptop|macbook|computer|equipment|hardware|home\s*office|software\s*license|workstation)|(?:equipment|hardware|laptop|workstation|software)\s*(?:deposit|procurement\s*fee|shipping\s*fee|insurance\s*fee|\$\d+)|(?:vendor|merchant).*?(?:approved|designated|preferred|accredited).*?(?:equipment|hardware|laptop)|(?:deduct|reimburse).*?(?:equipment|laptop|hardware)/i;
+  if (equipmentFeeRegex.test(textWithoutAdvanceFeeDisclaimers)) {
+    paymentScore += 70;
+    redFlags.push({
+      id: 'rf-advance-fee-equipment',
+      category: 'payment_demand',
+      title: 'Advance-Fee Fraud: Candidate-Funded Equipment or Hardware Vendor Deposit',
+      severity: 'CRITICAL',
+      quote: text.match(/(?:(?:purchase|buy|order|pay|wire|deposit).*?(?:laptop|equipment|hardware|home\s*office|software|vendor)|(?:equipment|laptop).*?(?:deposit|fee|vendor|\$\d+))/i)?.[0] || 'Candidate instructed to pay for work equipment or hardware vendor',
+      explanation: 'Requiring job candidates to pay a refundable equipment deposit or purchase hardware/software from a "designated vendor" is a predatory advance-fee fraud scheme. Authentic employers ship pre-configured IT equipment directly via corporate couriers at zero expense to the hire.',
+      verificationAdvice: 'Never transfer funds or purchase hardware from specified third-party vendors as an onboarding prerequisite. Corporate IT departments provision assets directly.'
+    });
+  }
+
+  // 1c. Advance-Fee Fraud: Candidate-Paid 'Soft' Credit Check or Background Check Fee
+  const creditCheckRegex = /(?:soft\s*credit\s*check|credit\s*(?:score|report)\s*(?:check|verification|fee)|background\s*(?:check|screening)\s*fee|obtain\s*(?:a|your)\s*(?:free\s*)?credit\s*(?:report|score)|run\s*(?:a|your)\s*credit\s*check|check\s*your\s*credit\s*score).*?(?:before\s*(?:we\s*can\s*proceed|the\s*interview|onboarding|offer)|fee|\$\d+|link|portal|at\s*https?)|(?:soft\s*credit\s*check|credit\s*report\s*fee|background\s*check\s*fee|(?:pay|submit)\s*(?:for\s*)?(?:your\s*)?(?:background|credit)\s*(?:check|report))/i;
+  if (creditCheckRegex.test(textWithoutAdvanceFeeDisclaimers)) {
+    paymentScore += 65;
+    redFlags.push({
+      id: 'rf-advance-fee-credit-check',
+      category: 'payment_demand',
+      title: 'Advance-Fee Fraud: Candidate-Paid "Soft" Credit Check or Background Screening',
+      severity: 'CRITICAL',
+      quote: text.match(/(?:soft\s*credit\s*check|credit\s*(?:score|report).*?(?:check|fee)|background\s*check\s*fee|(?:pay|submit).*?credit)/i)?.[0] || 'Candidate instructed to pay for or submit a soft credit report',
+      explanation: 'Directing job applicants to pay for a "soft credit check", credit score verification, or background check prior to interview or hiring is an advance-fee fraud and credential-harvesting vector. Under the Fair Credit Reporting Act (FCRA), authentic employers pay for all background checks through licensed Consumer Reporting Agencies after a conditional offer is extended.',
+      verificationAdvice: 'Never pay for an employment credit check or click external links to run credit scores for a recruiter. Authentic companies never make candidates pay for background screenings.'
+    });
+  }
+
+  // 1d. Advance-Fee Check / Cashier's Check Equipment Scheme
   if (/cashier['’]?s?\s*check|advance\s*check|equipment\s*funding|vendor\s*merchant|deduct\s*\$\d+/i.test(normalized)) {
     paymentScore += 50;
     redFlags.push({

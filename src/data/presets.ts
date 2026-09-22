@@ -191,5 +191,36 @@ Failure to verify within 2 hours will result in permanent account termination an
 Sincerely,
 Chase Fraud Prevention & Global Risk Management Division
 Support Ticket: https://chase-fraud-prevention.net/support`
+  },
+  {
+    id: 'advance-fee-training-credit-scam',
+    title: 'Advance-Fee Training & Credit Check Scam',
+    category: 'Job Offer',
+    threatExpectation: 'Critical Scam',
+    senderDomain: 'onboarding@global-career-verify.xyz',
+    description: 'Employment advance-fee fraud requiring candidate-paid software training modules and a mandatory soft credit check fee prior to interview.',
+    text: `GLOBAL HEALTHCARE LOGISTICS PARTNERS
+CONDITIONAL EMPLOYMENT OFFER & ONBOARDING DIRECTIVE
+
+Dear Applicant,
+
+We are pleased to inform you that your resume has been shortlisted for the position of Remote Patient Logistics Coordinator ($42.00/hour).
+
+To finalize your hiring package and schedule your orientation, you are required to fulfill two mandatory pre-employment compliance steps:
+
+1. MANDATORY CERTIFICATION & TRAINING MODULES:
+You must enroll in the certified HIPAA & Electronic Health Records Onboarding Course. A refundable training fee of $185.00 is required to unlock your access modules and testing key. This training cost will be fully reimbursed on your first bi-weekly paycheck.
+
+2. PRE-INTERVIEW SOFT CREDIT REPORT:
+Our risk management department requires all remote employees to verify financial responsibility. You must run a soft credit check via our accredited compliance link:
+https://global-career-verify.xyz/soft-credit-screening
+Please submit the $29.95 processing fee for your credit report verification before 5:00 PM today.
+
+Please forward both payment transaction receipts to our onboarding coordinator so we can dispatch your formal employment contract.
+
+Regards,
+Talent Acquisition Team
+Global Healthcare Logistics Partners
+Email: onboarding@global-career-verify.xyz`
   }
 ];
