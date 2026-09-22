@@ -299,8 +299,9 @@ ${text.trim()}
         if (response && response.text) {
           break; // Succeeded
         }
-      } catch (err: any) {
-        console.warn(`[ScamShield] Model ${model} encountered error:`, err?.message || err);
+      } catch (err: unknown) {
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        console.warn(`[ScamShield] Model ${model} encountered error:`, errorMsg);
         lastError = err;
       }
     }
@@ -326,19 +327,20 @@ ${text.trim()}
     };
 
     return res.json(result);
-  } catch (err: any) {
-    console.error('Scam analysis error, activating local heuristic engine:', err);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('Scam analysis error, activating local heuristic engine:', errorMsg);
     try {
       const { text, offerTypeHint, senderDomainOrUrl } = req.body || {};
       const localResult = analyzeOfferLocally(text || '', offerTypeHint, senderDomainOrUrl);
       return res.json({
         ...localResult,
         isFallbackRuleEngine: true,
-        fallbackReason: err?.message || 'AI cloud service temporarily unavailable. Analysis completed using ScamShield Local Threat Heuristics Engine.',
+        fallbackReason: errorMsg || 'AI cloud service temporarily unavailable. Analysis completed using ScamShield Local Threat Heuristics Engine.',
       });
     } catch {
       return res.status(500).json({
-        error: err.message || 'An error occurred during AI analysis. Please verify your API key and input text.',
+        error: errorMsg || 'An error occurred during AI analysis. Please verify your API key and input text.',
       });
     }
   }
