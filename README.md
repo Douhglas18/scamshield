@@ -73,3 +73,21 @@ ScamShield uses **Google Gemini** with structured response engineering to guaran
   ],
   "recommendedAction": "Do not pay any money or share government ID. Block sender immediately."
 }
+```
+
+---
+
+## 🧪 Automated Testing & Verification Suite
+
+ScamShield includes a unit and integration test suite powered by **Vitest**:
+
+```bash
+# Run the test suite
+npm test
+```
+
+### Test Coverage Highlights:
+* **`bankDetection.test.ts`**: Verifies distinction between authentic automated bank notifications (e.g., Chase binary YES/NO, masked PANs) vs. phishing attacks with OTP/PIN harvesting and fake fraud hotlines.
+* **`localAnalyzer.test.ts`**: Tests advance-fee cashier check scam detection, absentee landlord rental fraud, Telegram recruitment channels, and authentic corporate offer validation.
+* **`linkScanner.test.ts`**: Tests detection of free webmail senders, suspicious TLDs, and URL extraction from message bodies.
+* **`presets.test.ts`**: Asserts integrity and completeness across all built-in reference attack and legitimate presets.

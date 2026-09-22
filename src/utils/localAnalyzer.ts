@@ -78,7 +78,10 @@ export function analyzeOfferLocally(
 
   // 2. Sensitive Info Harvesting
   let sensitiveScore = 0;
-  if (/social\s*security|ssn|driver['’]?s?\s*license|passport\s*scan|banking\s*login|username\s*and\s*password|voided\s*check/i.test(normalized)) {
+  // Exclude explicit anti-fraud disclaimers stating the institution will NEVER ask for password/pin/otp
+  const textWithoutAntiFraudDisclaimers = normalized.replace(/never\s*(?:call\s*or\s*text|ask).*?(?:pin|password|passcode|code|otp)[^.\n]*\.?/gi, '');
+
+  if (/social\s*security|ssn|driver['’]?s?\s*license|passport\s*scan|banking\s*login|username\s*and\s*password|voided\s*check/i.test(textWithoutAntiFraudDisclaimers)) {
     sensitiveScore += 80;
     redFlags.push({
       id: 'rf-sensitive-harvesting',
@@ -93,14 +96,14 @@ export function analyzeOfferLocally(
 
   // 3. Urgency tactics
   let urgencyScore = 0;
-  if (/within\s*(?:12|24|48)\s*hours|immediate|today\s*only|expire|forfeit|5:00\s*pm\s*today|act\s*fast/i.test(normalized)) {
+  if (/within\s*(?:\d+)\s*(?:hour|minute|day|hr)s?|immediate|today\s*only|expire|forfeit|5:00\s*pm\s*today|act\s*fast/i.test(normalized)) {
     urgencyScore += 75;
     redFlags.push({
       id: 'rf-urgency-coercion',
       category: 'urgency',
       title: 'High-Pressure Artificial Deadline',
       severity: 'HIGH',
-      quote: text.match(/(?:within\s*(?:12|24|48)\s*hours|by\s*5:00\s*pm|forfeit\s*this\s*offer)/i)?.[0] || 'Short deadline to respond',
+      quote: text.match(/(?:within\s*(?:\d+)\s*(?:hour|minute|day|hr)s?|immediate|today\s*only|by\s*5:00\s*pm|forfeit\s*this\s*offer)/i)?.[0] || 'Short deadline to respond',
       explanation: 'Scammers enforce artificial 12-24 hour deadlines to trigger panic and prevent victims from consulting family, fraud hotlines, or legal counsel.',
       verificationAdvice: 'Reputable organizations and landlords afford candidates multiple business days to review formal agreements. Resist artificial pressure.'
     });
@@ -166,7 +169,7 @@ export function analyzeOfferLocally(
   const isBankContext = /chase|wells\s*fargo|bank\s*of\s*america|bofa|citi(?:bank)?|capital\s*one|us\s*bank|fidelity|pnc|fraud\s*alert|debit\s*card|credit\s*card|online\s*banking/i.test(normalized);
 
   // Phishing bank patterns
-  if (/(?:atm\s*pin|4-digit\s*pin|one-time\s*passcode|otp|enter\s*your\s*(?:user\s*id|password|pin)|verification\s*portal)/i.test(normalized)) {
+  if (/(?:atm\s*pin|4-digit\s*pin|one-time\s*passcode|otp|enter\s*your\s*(?:user\s*id|password|pin)|verification\s*portal)/i.test(textWithoutAntiFraudDisclaimers)) {
     sensitiveScore += 90;
     redFlags.push({
       id: 'rf-bank-otp-harvesting',
