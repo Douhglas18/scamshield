@@ -1,0 +1,6 @@
+{
+  "name": "ScamShield",
+  "description": "Fake Offer Letter & Phishing Inspector powered by Gemini AI with real-time scam threat scoring, red flag analysis, and local link protection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
